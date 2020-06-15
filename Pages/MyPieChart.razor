@@ -1,0 +1,132 @@
+@page "/MyPieChart"
+
+@using ChartJs.Blazor.Charts
+@using ChartJs.Blazor.ChartJS.PieChart
+@using ChartJs.Blazor.ChartJS.Common.Properties
+@using ChartJs.Blazor.Util
+@using Data
+@inject Data.CharacterService CharService
+
+@if (characters == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width:50%">Classes</th>
+                <th style="width:50%">Races</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <ChartJsPieChart @ref="_pieChartJsClass"
+                            Config="@_configClass"/>
+
+                </td>
+                <td>
+                    <ChartJsPieChart @ref="_pieChartJsRace"
+                            Config="@_configRace"/>
+
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+}
+
+@code {
+    private List<Data.Characters> characters;
+    private Dictionary<string,double> countsClass;
+    private Dictionary<string,double> countsRaces;
+    // Reference of usage at :
+    // https://github.com/mariusmuntean/ChartJs.Blazor/tree/releases
+    private PieConfig _configClass;
+    private ChartJsPieChart _pieChartJsClass;
+
+    private PieConfig _configRace;
+    private ChartJsPieChart _pieChartJsRace;
+
+    protected override async Task OnInitializedAsync()
+    {
+        characters = await CharService.GetCharacterAsync();
+
+        _configClass = new PieConfig
+        {
+            Options = new PieOptions
+            {
+                Title = new OptionsTitle
+                {
+                    Display = true,
+                    Text = "Character Classes"
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                }
+            }
+        };
+
+        // TEMP
+        _configRace = new PieConfig
+        {
+            Options = new PieOptions
+            {
+                Title = new OptionsTitle
+                {
+                    Display = true,
+                    Text = "Character Races"
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                }
+            }
+        };
+
+        // Gets Data for chart
+        countsClass = characters.GroupBy(x => x.Class).ToDictionary(x => x.Key, x => double.Parse(x.Count().ToString()));
+
+        countsRaces = characters.GroupBy(x => x.Race).ToDictionary(x => x.Key, x => (double)x.Count());
+        
+        _configClass.Data.Labels.AddRange(countsClass.Keys);
+
+        _configRace.Data.Labels.AddRange(countsRaces.Keys);
+        
+
+        var pieSetClass = new PieDataset
+        {
+            BackgroundColor = new[] { ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString() },
+            BorderWidth = 0,
+            HoverBackgroundColor = ColorUtil.RandomColorString(),
+            HoverBorderColor = ColorUtil.RandomColorString(),
+            HoverBorderWidth = 1,
+            BorderColor = "#ffffff",
+        };
+
+        var pieSetRaces = new PieDataset
+        {
+            BackgroundColor = new[] { ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString(), ColorUtil.RandomColorString() },
+            BorderWidth = 0,
+            HoverBackgroundColor = ColorUtil.RandomColorString(),
+            HoverBorderColor = ColorUtil.RandomColorString(),
+            HoverBorderWidth = 1,
+            BorderColor = "#ffffff",
+        };
+
+        pieSetClass.Data.AddRange(countsClass.Values);
+        
+        _configClass.Data.Datasets.Add(pieSetClass);
+
+        pieSetRaces.Data.AddRange(countsRaces.Values);
+        
+        _configRace.Data.Datasets.Add(pieSetRaces);
+    }
+}

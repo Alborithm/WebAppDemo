@@ -1,0 +1,50 @@
+@page "/characterdata"
+
+@using WebApplication1.Data
+@inject CharacterService CharService
+
+<h1>Characters List</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (characters == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>Race</th>
+                <th>IsAlive</th>
+                <th>Proficiency</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var character in characters)
+            {
+                <tr>
+                    <td>@character.Id</td>
+                    <td>@character.CharName</td>
+                    <td>@character.Class</td>
+                    <td>@character.Race</td>
+                    <td>@character.IsAlive</td>
+                    <td>@character.Proficiency</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Characters> characters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        characters = await CharService.GetCharacterAsync();
+    }
+}
